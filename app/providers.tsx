@@ -4,7 +4,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState } 
 import type { User } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabase'
 import { loadLog, saveLog, markComplete as localMarkComplete, getStreak, dateKey } from '@/lib/storage'
-import { fetchRemoteLog, syncCompletion, sendMagicLink, signOut as supabaseSignOut } from '@/lib/auth'
+import { fetchRemoteLog, syncCompletion, sendMagicLink, signInWithGoogle, signOut as supabaseSignOut } from '@/lib/auth'
 import { week, todayIndex } from '@/lib/data'
 
 export type Readiness = 'full' | 'moderate' | 'light' | null
@@ -19,6 +19,7 @@ type WorkoutCtx = {
   setReadiness: (r: Readiness) => void
   markComplete: () => Promise<void>
   signIn: (email: string) => Promise<void>
+  signInGoogle: () => Promise<void>
   signOut: () => Promise<void>
 }
 
@@ -76,6 +77,10 @@ export function WorkoutProvider({ children }: { children: React.ReactNode }) {
     await sendMagicLink(email)
   }, [])
 
+  const signInGoogle = useCallback(async () => {
+    await signInWithGoogle()
+  }, [])
+
   const handleSignOut = useCallback(async () => {
     await supabaseSignOut()
     setUser(null)
@@ -85,7 +90,7 @@ export function WorkoutProvider({ children }: { children: React.ReactNode }) {
     <Ctx.Provider value={{
       user, log, streak, loading, completedToday,
       readiness, setReadiness,
-      markComplete, signIn, signOut: handleSignOut,
+      markComplete, signIn, signInGoogle, signOut: handleSignOut,
     }}>
       {children}
     </Ctx.Provider>

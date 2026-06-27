@@ -19,6 +19,18 @@ export async function syncCompletion(userId: string, date: string, sessionKey: s
     )
 }
 
+export async function signInWithGoogle(): Promise<void> {
+  if (!supabase) throw new Error('Supabase niet geconfigureerd')
+  const { error } = await supabase.auth.signInWithOAuth({
+    provider: 'google',
+    options: {
+      redirectTo:
+        typeof window !== 'undefined' ? `${window.location.origin}/auth/callback` : undefined,
+    },
+  })
+  if (error) throw error
+}
+
 export async function sendMagicLink(email: string): Promise<void> {
   if (!supabase) throw new Error('Supabase niet geconfigureerd')
   const { error } = await supabase.auth.signInWithOtp({

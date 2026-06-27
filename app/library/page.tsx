@@ -8,6 +8,12 @@ import type { Exercise } from '@/lib/data'
 const GROUPS: ('All' | Group)[] = ['All', 'Push', 'Pull', 'Legs', 'Core', 'Mobility', 'Conditioning']
 const LEVELS: ('All' | Level)[] = ['All', 'Base', 'Strong', 'Beast']
 
+const LEVEL_CHIP_STYLE: Record<Level, React.CSSProperties> = {
+  Beast:  { background: 'rgba(212,252,90,.16)', borderColor: 'rgba(212,252,90,.4)', color: 'var(--lime)' },
+  Strong: { background: 'rgba(10,132,255,.15)', borderColor: 'rgba(10,132,255,.4)', color: '#4da6ff' },
+  Base:   { background: 'rgba(255,255,255,.08)', borderColor: 'rgba(255,255,255,.14)', color: 'var(--text-secondary)' },
+}
+
 export default function LibraryPage() {
   const [activeGroup, setActiveGroup] = useState<'All' | Group>('All')
   const [activeLevel, setActiveLevel] = useState<'All' | Level>('All')
@@ -21,12 +27,11 @@ export default function LibraryPage() {
 
   return (
     <main className="shell page-enter">
-      <div style={{ padding: '8px 0 16px' }}>
-        <p className="eyebrow muted">Oefenbibliotheek</p>
-        <h1 className="section-title">Bewegingen die overal werken</h1>
+      <div className="page-header">
+        <p className="eyebrow muted">Bewegingen</p>
+        <h1 className="section-title">Oefenbibliotheek</h1>
       </div>
 
-      {/* Group filter */}
       <div className="filter-row">
         {GROUPS.map((g) => (
           <button
@@ -39,25 +44,20 @@ export default function LibraryPage() {
         ))}
       </div>
 
-      {/* Level filter */}
       <div className="filter-row" style={{ paddingTop: 0 }}>
         {LEVELS.map((l) => (
           <button
             key={l}
             className={`filter-chip${activeLevel === l ? ' active' : ''}`}
+            style={activeLevel === l && l !== 'All' ? LEVEL_CHIP_STYLE[l as Level] : {}}
             onClick={() => setActiveLevel(l)}
-            style={activeLevel === l && l !== 'All' ? {
-              background: l === 'Beast' ? 'rgba(212,252,90,.2)' : l === 'Strong' ? 'rgba(147,197,253,.2)' : 'var(--faint)',
-              borderColor: l === 'Beast' ? 'rgba(212,252,90,.5)' : l === 'Strong' ? 'rgba(147,197,253,.4)' : 'var(--border)',
-              color: l === 'Beast' ? 'var(--lime)' : l === 'Strong' ? '#93c5fd' : 'var(--muted)',
-            } : {}}
           >
             {l}
           </button>
         ))}
       </div>
 
-      <p style={{ fontSize: 12, color: 'var(--muted)', marginBottom: 16 }}>
+      <p style={{ fontSize: 12, color: 'var(--text-tertiary)', marginBottom: 16, letterSpacing: '.02em' }}>
         {filtered.length} oefening{filtered.length !== 1 ? 'en' : ''}
       </p>
 
@@ -68,12 +68,15 @@ export default function LibraryPage() {
             <button key={ex.id} className="ex-card" onClick={() => setSelected(ex)}>
               <div
                 className="ex-tile"
-                style={{ background: `linear-gradient(135deg, ${from}44, ${to}88)` }}
+                style={{ background: `linear-gradient(135deg, ${from}40, ${to}80)` }}
               >
-                <span
-                  className={`ex-symbol anim-${ex.animation}`}
-                  style={{ color: from }}
-                >
+                {/* Subtle radial center glow */}
+                <div style={{
+                  position: 'absolute', inset: 0, borderRadius: 'inherit',
+                  background: `radial-gradient(circle at 40% 35%, ${from}30, transparent 65%)`,
+                  pointerEvents: 'none',
+                }} />
+                <span className={`ex-symbol anim-${ex.animation}`} style={{ color: from }}>
                   {ex.symbol}
                 </span>
               </div>
@@ -88,9 +91,7 @@ export default function LibraryPage() {
         })}
       </div>
 
-      {selected && (
-        <ExerciseModal exercise={selected} onClose={() => setSelected(null)} />
-      )}
+      {selected && <ExerciseModal exercise={selected} onClose={() => setSelected(null)} />}
     </main>
   )
 }

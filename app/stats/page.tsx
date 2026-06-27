@@ -26,18 +26,18 @@ export default function StatsPage() {
   return (
     <main className="shell page-enter">
       <div className="page-header">
-        <p className="eyebrow muted">Voortgang</p>
+        <p className="eyebrow">Voortgang</p>
         <h1 className="section-title">Stats</h1>
       </div>
 
-      {/* Big streak cards */}
+      {/* Streak + longest */}
       <div className="stats-big-row">
-        <div className="sbc glass-card sbc-lime">
+        <div className="sbc sbc-streak card">
           <p className="sbc-label">Huidige streak</p>
           <div className="sbc-num">{streak}</div>
           <p className="sbc-sub">{streak === 1 ? 'dag' : 'dagen'} op rij</p>
         </div>
-        <div className="sbc glass-card">
+        <div className="sbc card">
           <p className="sbc-label">Langste streak</p>
           <div className="sbc-num">{longest}</div>
           <p className="sbc-sub">persoonlijk record</p>
@@ -47,11 +47,11 @@ export default function StatsPage() {
       {/* Mini stats */}
       <div className="mini-stats-row">
         {[
-          { label: 'Totaal',      value: total,      sub: 'workouts' },
-          { label: 'Maand',       value: monthCount, sub: 'sessies' },
-          { label: 'Week',        value: weekCount,  sub: 'van 7' },
+          { label: 'Totaal',  value: total,      sub: 'workouts' },
+          { label: 'Maand',   value: monthCount, sub: 'sessies'  },
+          { label: 'Week',    value: weekCount,  sub: 'van 7'    },
         ].map((s) => (
-          <div key={s.label} className="sbc glass-card" style={{ padding: '18px 20px' }}>
+          <div key={s.label} className="sbc card" style={{ padding: '18px 20px' }}>
             <p className="sbc-label">{s.label}</p>
             <div className="sbc-num" style={{ fontSize: 42 }}>{s.value}</div>
             <p className="sbc-sub">{s.sub}</p>
@@ -60,17 +60,17 @@ export default function StatsPage() {
       </div>
 
       {/* Level progress */}
-      <section className="level-progress-card glass-card">
+      <section className="level-progress-card card" style={{ marginBottom: 12 }}>
         <div className="lp-header">
           <div>
             <p className="eyebrow">Level</p>
-            <h2 style={{ fontSize: 'clamp(22px,4vw,30px)', fontWeight: 800, letterSpacing: '-.05em', marginTop: 6 }}>
+            <h2 style={{ fontSize: 'clamp(20px,4vw,28px)', fontWeight: 800, letterSpacing: '-.05em', marginTop: 6 }}>
               {level === 'Beast' ? '🔥' : level === 'Strong' ? '⚡' : '🌱'} {LEVEL_LABELS[level]}
             </h2>
           </div>
           {nextLevel && (
-            <p style={{ fontSize: 13, textAlign: 'right', color: 'var(--text-secondary)' }}>
-              Nog <strong style={{ color: 'var(--text)' }}>{nextThreshold! - total}</strong>
+            <p style={{ fontSize: 13, textAlign: 'right', color: 'var(--t3)' }}>
+              Nog <strong style={{ color: 'var(--t1)' }}>{nextThreshold! - total}</strong>
               <br />naar {nextLevel}
             </p>
           )}
@@ -86,13 +86,13 @@ export default function StatsPage() {
       </section>
 
       {/* Heatmap */}
-      <section className="heatmap-section glass-card">
+      <section className="heatmap-section card" style={{ marginBottom: 12 }}>
         <p className="eyebrow">Activiteit</p>
         <h2 style={{ fontSize: 'clamp(18px,3vw,24px)', fontWeight: 800, letterSpacing: '-.04em', margin: '8px 0 20px' }}>
           Afgelopen 13 weken
         </h2>
         <Heatmap log={log} />
-        <p style={{ fontSize: 12, marginTop: 14, color: 'var(--text-tertiary)' }}>
+        <p style={{ fontSize: 11, marginTop: 14, color: 'var(--t3)' }}>
           Elke groene cel = 1 voltooide workout
         </p>
       </section>

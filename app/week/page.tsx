@@ -7,7 +7,6 @@ import { loadLog, dateKey } from '@/lib/storage'
 export default function WeekPage() {
   const [log, setLog] = useState<string[]>([])
   const [selected, setSelected] = useState(todayIndex())
-
   useEffect(() => { setLog(loadLog()) }, [])
 
   const todayIdx = todayIndex()
@@ -15,35 +14,32 @@ export default function WeekPage() {
 
   const doneFlags = useMemo(() => {
     const today = new Date()
-    const mondayOfWeek = new Date(today)
-    mondayOfWeek.setDate(today.getDate() - todayIdx)
+    const monday = new Date(today)
+    monday.setDate(today.getDate() - todayIdx)
     return week.map((_, i) => {
-      const target = new Date(mondayOfWeek)
-      target.setDate(mondayOfWeek.getDate() + i)
-      return log.includes(dateKey(target))
+      const d = new Date(monday)
+      d.setDate(monday.getDate() + i)
+      return log.includes(dateKey(d))
     })
   }, [log, todayIdx])
-
-  const totalDone = doneFlags.filter(Boolean).length
 
   return (
     <main className="shell page-enter">
       <div className="page-header">
-        <p className="eyebrow muted">Deze week</p>
-        <h1 className="section-title">Weekschema</h1>
-        <p style={{ fontSize: 14 }}>{totalDone} van 7 dagen voltooid</p>
+        <p className="eyebrow">Schema</p>
+        <h1 className="section-title">Week</h1>
+        <p style={{ fontSize: 14 }}>{doneFlags.filter(Boolean).length} van 7 dagen voltooid</p>
       </div>
 
-      {/* Day strip */}
-      <div className="glass-card" style={{ marginBottom: 12 }}>
+      <div className="card" style={{ marginBottom: 12 }}>
         <div className="week-grid">
           {week.map((s, i) => (
             <button
               key={s.day}
               className={[
                 'week-day-btn',
-                i === todayIdx ? 'today' : '',
-                doneFlags[i]   ? 'done' : '',
+                i === todayIdx ? 'today'    : '',
+                doneFlags[i]   ? 'done'     : '',
                 selected === i  ? 'selected' : '',
               ].filter(Boolean).join(' ')}
               onClick={() => setSelected(i)}
@@ -57,10 +53,9 @@ export default function WeekPage() {
         </div>
       </div>
 
-      {/* Session detail */}
-      <section className="session-panel glass-card">
+      <section className="session-panel card">
         <p className="eyebrow">{session.day} · {session.focus}</p>
-        <h2 style={{ fontSize: 'clamp(24px,5vw,38px)', fontWeight: 800, letterSpacing: '-.05em', margin: '8px 0 8px' }}>
+        <h2 style={{ fontSize: 'clamp(22px,5vw,34px)', fontWeight: 800, letterSpacing: '-.05em', margin: '8px 0 8px' }}>
           {session.title}
         </h2>
         <p style={{ fontSize: 15 }}>{session.intent}</p>
@@ -77,15 +72,11 @@ export default function WeekPage() {
 
         <div style={{ marginTop: 20 }}>
           <span style={{
-            display: 'inline-block',
-            padding: '6px 14px',
-            background: 'rgba(255,255,255,.07)',
-            border: '1px solid rgba(255,255,255,.12)',
-            borderRadius: 999,
-            fontSize: 13, fontWeight: 600,
-            color: 'var(--text-secondary)',
+            padding: '5px 13px',
+            background: 'var(--s-inset)', border: '1px solid var(--border)',
+            borderRadius: 999, fontSize: 13, fontWeight: 600, color: 'var(--t3)',
           }}>
-            ⏱ {session.time} minuten
+            ⏱ {session.time} min
           </span>
         </div>
       </section>

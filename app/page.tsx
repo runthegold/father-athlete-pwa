@@ -5,6 +5,69 @@ import { week, todayIndex, getLevel, LEVEL_LABELS } from '@/lib/data'
 import { loadLog, markComplete, getStreak, getThisWeekCount, dateKey } from '@/lib/storage'
 import WorkoutMode from '@/components/WorkoutMode'
 
+// Streak ring: thin SVG ring like Apple Fitness / Whoop
+function StreakRing({ streak, maxStreak = 30 }: { streak: number; maxStreak?: number }) {
+  const r = 64
+  const c = 2 * Math.PI * r
+  const progress = Math.min(1, streak / maxStreak)
+  const offset   = c * (1 - progress)
+  const active   = streak > 0
+
+  return (
+    <div className={`streak-counter${active ? ' active' : ''}`}>
+      <svg className="streak-ring-svg" viewBox="0 0 144 144">
+        <circle cx="72" cy="72" r={r} className="streak-ring-track" />
+        {active && (
+          <circle
+            cx="72" cy="72" r={r}
+            className="streak-ring-fill"
+            style={{ strokeDasharray: c, strokeDashoffset: offset }}
+          />
+        )}
+      </svg>
+      <div className="streak-inner">
+        <span className="streak-num">{streak}</span>
+        <span className="streak-lbl">streak</span>
+      </div>
+    </div>
+  )
+}
+
+// Workout timer as Apple Fitness-style ring
+function TimerRing({
+  seconds, totalSeconds, running,
+}: { seconds: number; totalSeconds: number; running: boolean }) {
+  const r = 46
+  const c = 2 * Math.PI * r
+  const progress = totalSeconds > 0 ? seconds / totalSeconds : 0
+  const offset   = c * progress          // offset decreases as time runs
+  const mm = String(Math.floor(seconds / 60)).padStart(2, '0')
+  const ss = String(seconds % 60).padStart(2, '0')
+  const color = running ? 'var(--lime)' : 'var(--t3)'
+
+  return (
+    <div className="wc-timer-wrap">
+      <svg className="wc-timer-svg" viewBox="0 0 108 108">
+        <circle cx="54" cy="54" r={r} className="wc-ring-track" />
+        <circle
+          cx="54" cy="54" r={r}
+          className="wc-ring-fill"
+          style={{
+            stroke: color,
+            strokeDasharray: c,
+            strokeDashoffset: c - offset,
+            filter: running ? `drop-shadow(0 0 6px rgba(200,241,53,.45))` : 'none',
+          }}
+        />
+      </svg>
+      <div className="wc-timer-inner">
+        <strong style={{ color: running ? 'var(--t1)' : 'var(--t2)' }}>{mm}:{ss}</strong>
+        <small>{running ? 'loopt' : 'timer'}</small>
+      </div>
+    </div>
+  )
+}
+
 export default function TodayPage() {
   const [log, setLog] = useState<string[]>([])
   const [showWorkout, setShowWorkout] = useState(false)
@@ -12,27 +75,22 @@ export default function TodayPage() {
   const [timerRunning, setTimerRunning] = useState(false)
 
   const todayIdx = todayIndex()
-  const session = week[todayIdx]
+  const session  = week[todayIdx]
 
   useEffect(() => { setLog(loadLog()) }, [])
   useEffect(() => { setSeconds(session.time * 60) }, [session.time])
 
   useEffect(() => {
     if (!timerRunning) return
-    const id = setInterval(() => setSeconds((s) => Math.max(0, s - 1)), 1000)
+    const id = setInterval(() => setSeconds((s) => { if (s <= 1) { setTimerRunning(false); return 0 } return s - 1 }), 1000)
     return () => clearInterval(id)
   }, [timerRunning])
 
-  const streak       = useMemo(() => getStreak(log), [log])
-  const weekCount    = useMemo(() => getThisWeekCount(log), [log])
-  const totalWorkouts = log.length
-  const level        = getLevel(totalWorkouts)
+  const streak         = useMemo(() => getStreak(log), [log])
+  const weekCount      = useMemo(() => getThisWeekCount(log), [log])
+  const totalWorkouts  = log.length
+  const level          = getLevel(totalWorkouts)
   const completedToday = log.includes(dateKey())
-
-  const mm = String(Math.floor(seconds / 60)).padStart(2, '0')
-  const ss = String(seconds % 60).padStart(2, '0')
-  const timerProgress = seconds / (session.time * 60)
-  const timerAngle    = (1 - timerProgress) * 360
 
   function handleComplete() {
     setLog(markComplete(log))
@@ -50,14 +108,13 @@ export default function TodayPage() {
       )}
 
       {/* ── Hero ── */}
-      <section className="today-hero glass-card glass-card-tinted">
-        <div className="hero-glow" />
+      <section className="today-hero card" style={{ marginBottom: 12 }}>
         <div className="hero-text">
           <p className="eyebrow">{dayName} · {dateStr}</p>
           <h1 className="hero-title">Blijf 365 dagen<br />per jaar capabel.</h1>
           <p className="hero-lead">{session.intent}</p>
 
-          <div className="btn-row mt-md">
+          <div className="btn-row" style={{ marginTop: 24 }}>
             <button className="btn-primary" onClick={() => setShowWorkout(true)}>
               {completedToday ? 'Opnieuw trainen' : '▶ Start workout'}
             </button>
@@ -70,24 +127,21 @@ export default function TodayPage() {
             <span className={`level-badge ${level}`}>
               {level === 'Beast' ? '🔥' : level === 'Strong' ? '⚡' : '🌱'} {LEVEL_LABELS[level]}
             </span>
-            {completedToday && <span className="level-badge Beast">✓ Vandaag done</span>}
+            {completedToday && <span className="level-badge done">✓ Vandaag done</span>}
           </div>
         </div>
 
-        <div className="streak-orb">
-          <span className="num">{streak}</span>
-          <span className="lbl">streak</span>
-        </div>
+        <StreakRing streak={streak} maxStreak={Math.max(30, streak)} />
       </section>
 
       {/* ── Stats row ── */}
       <div className="stats-row">
         {[
-          { label: 'Vandaag',     value: `${session.time} min`, sub: session.title },
-          { label: 'Deze week',   value: `${weekCount}/7`,       sub: 'sessies' },
-          { label: 'Totaal',      value: String(totalWorkouts),  sub: 'workouts' },
+          { label: 'Vandaag',   value: `${session.time} min`, sub: session.title },
+          { label: 'Week',      value: `${weekCount}/7`,       sub: 'sessies' },
+          { label: 'Totaal',    value: String(totalWorkouts),  sub: 'workouts' },
         ].map((s) => (
-          <div key={s.label} className="stat-card glass-card">
+          <div key={s.label} className="stat-card card">
             <span className="sc-label">{s.label}</span>
             <span className="sc-value">{s.value}</span>
             <span className="sc-sub">{s.sub}</span>
@@ -96,30 +150,19 @@ export default function TodayPage() {
       </div>
 
       {/* ── Workout card ── */}
-      <section className="workout-card glass-card">
+      <section className="workout-card card" style={{ marginBottom: 12 }}>
         <div className="wc-header">
           <div className="wc-meta">
-            <p className="eyebrow">Workout van de dag</p>
-            <h2 style={{ fontSize: 'clamp(20px,4vw,30px)', fontWeight: 800, letterSpacing: '-.05em', margin: '6px 0 6px' }}>
-              {session.day} · {session.title}
+            <p className="eyebrow">{session.day}</p>
+            <h2 style={{ fontSize: 'clamp(20px,4vw,28px)', fontWeight: 800, letterSpacing: '-.05em', margin: '6px 0 6px' }}>
+              {session.title}
             </h2>
             <p style={{ fontSize: 14 }}>{session.focus}</p>
           </div>
-
-          <div
-            className="wc-timer"
-            style={{
-              background: `conic-gradient(${timerAngle < 10 ? 'rgba(212,252,90,.3)' : 'var(--lime)'} ${timerAngle}deg, rgba(255,255,255,.06) 0deg)`,
-            }}
-          >
-            <div className="wc-timer-inner">
-              <strong>{mm}:{ss}</strong>
-              <small>timer</small>
-            </div>
-          </div>
+          <TimerRing seconds={seconds} totalSeconds={session.time * 60} running={timerRunning} />
         </div>
 
-        <div className="btn-row mt-md">
+        <div className="btn-row" style={{ marginTop: 20 }}>
           <button className="btn-primary" onClick={() => setTimerRunning((v) => !v)}>
             {timerRunning ? '⏸ Pauze' : '▶ Timer'}
           </button>
@@ -140,10 +183,10 @@ export default function TodayPage() {
       </section>
 
       {/* ── Mission ── */}
-      <section className="mission-section glass-card glass-card-tinted">
+      <section className="mission-section card" style={{ marginBottom: 12 }}>
         <p className="eyebrow">Regel van het systeem</p>
         <h2>Niet perfect trainen.<br />Nooit verdwijnen.</h2>
-        <p style={{ fontSize: 16, maxWidth: 640 }}>
+        <p style={{ fontSize: 16, maxWidth: 620, marginTop: 10 }}>
           Op zware dagen telt 12 minuten mobility. Op goede dagen mag je uitbreiden.
           De streak beloont aanwezigheid, niet ego.
         </p>

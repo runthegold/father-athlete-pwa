@@ -1,6 +1,14 @@
 import type { Metadata, Viewport } from 'next'
+import { Inter } from 'next/font/google'
 import './globals.css'
 import BottomNav from '@/components/BottomNav'
+import { WorkoutProvider } from './providers'
+
+const inter = Inter({
+  subsets: ['latin'],
+  variable: '--font-inter',
+  display: 'swap',
+})
 
 export const metadata: Metadata = {
   title: 'Father Athlete OS',
@@ -10,7 +18,7 @@ export const metadata: Metadata = {
 }
 
 export const viewport: Viewport = {
-  themeColor: '#08090a',
+  themeColor: '#000000',
   width: 'device-width',
   initialScale: 1,
   maximumScale: 1,
@@ -18,10 +26,12 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="nl">
+    <html lang="nl" className={inter.variable}>
       <body>
-        {children}
-        <BottomNav />
+        <WorkoutProvider>
+          {children}
+          <BottomNav />
+        </WorkoutProvider>
       </body>
     </html>
   )

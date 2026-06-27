@@ -1,13 +1,13 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import { getLevel, LEVEL_LABELS, LEVEL_THRESHOLDS } from '@/lib/data'
-import { loadLog, getStreak, getLongestStreak, getThisWeekCount, getThisMonthCount } from '@/lib/storage'
+import { getStreak, getLongestStreak, getThisWeekCount, getThisMonthCount } from '@/lib/storage'
 import Heatmap from '@/components/Heatmap'
+import { useWorkout } from '@/app/providers'
 
 export default function StatsPage() {
-  const [log, setLog] = useState<string[]>([])
-  useEffect(() => { setLog(loadLog()) }, [])
+  const { log } = useWorkout()
 
   const streak     = useMemo(() => getStreak(log), [log])
   const longest    = useMemo(() => getLongestStreak(log), [log])
@@ -30,7 +30,6 @@ export default function StatsPage() {
         <h1 className="section-title">Stats</h1>
       </div>
 
-      {/* Streak + longest */}
       <div className="stats-big-row">
         <div className="sbc sbc-streak card">
           <p className="sbc-label">Huidige streak</p>
@@ -44,7 +43,6 @@ export default function StatsPage() {
         </div>
       </div>
 
-      {/* Mini stats */}
       <div className="mini-stats-row">
         {[
           { label: 'Totaal',  value: total,      sub: 'workouts' },
@@ -59,7 +57,6 @@ export default function StatsPage() {
         ))}
       </div>
 
-      {/* Level progress */}
       <section className="level-progress-card card" style={{ marginBottom: 12 }}>
         <div className="lp-header">
           <div>
@@ -85,7 +82,6 @@ export default function StatsPage() {
         </div>
       </section>
 
-      {/* Heatmap */}
       <section className="heatmap-section card" style={{ marginBottom: 12 }}>
         <p className="eyebrow">Activiteit</p>
         <h2 style={{ fontSize: 'clamp(18px,3vw,24px)', fontWeight: 800, letterSpacing: '-.04em', margin: '8px 0 20px' }}>

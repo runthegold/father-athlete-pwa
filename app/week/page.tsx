@@ -1,13 +1,13 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { week, todayIndex } from '@/lib/data'
-import { loadLog, dateKey } from '@/lib/storage'
+import { dateKey } from '@/lib/storage'
+import { useWorkout } from '@/app/providers'
 
 export default function WeekPage() {
-  const [log, setLog] = useState<string[]>([])
+  const { log } = useWorkout()
   const [selected, setSelected] = useState(todayIndex())
-  useEffect(() => { setLog(loadLog()) }, [])
 
   const todayIdx = todayIndex()
   const session  = week[selected]
